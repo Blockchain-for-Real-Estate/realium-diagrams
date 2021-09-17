@@ -7,7 +7,7 @@ from diagrams.gcp.network import DNS
 from diagrams.aws.network import Route53HostedZone
 from diagrams.programming.framework import React, Django
 
-with Diagram("High Level Architecture - Level 0 (old)"):
+with Diagram("(Old) High Level Architecture - Level 0"):
     # ENTITIES
     GoogleDomains = DNS("Google Domains")
     DNS = Route53HostedZone("DNS Hosted Zone")
