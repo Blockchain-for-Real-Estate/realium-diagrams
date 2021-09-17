@@ -2,11 +2,12 @@
 from diagrams import Diagram, Cluster
 from diagrams.aws.blockchain import BlockchainResource
 from diagrams.aws.compute import EC2Instance
+from diagrams.aws.storage import SimpleStorageServiceS3Bucket
 from diagrams.gcp.network import DNS
 from diagrams.aws.network import Route53HostedZone
 from diagrams.programming.framework import React, Django
 
-with Diagram("Old Architecture"):
+with Diagram("High Level Architecture - Level 0 (old)"):
     # ENTITIES
     GoogleDomains = DNS("Google Domains")
     DNS = Route53HostedZone("DNS Hosted Zone")
@@ -14,7 +15,7 @@ with Diagram("Old Architecture"):
     # CLUSTERS
     with Cluster("Web Services"):
         Realium = React("realium.io")
-        WebServer = EC2Instance("EC2")
+        WebServer = SimpleStorageServiceS3Bucket("S3 Bucket")
         Realium - WebServer
 
     with Cluster("Api Services"):
