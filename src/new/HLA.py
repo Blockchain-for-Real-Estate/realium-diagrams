@@ -46,10 +46,8 @@ with Diagram("High Level Architecture - Level 0"):
             co_functions = Lambda("Lambda@Edge")
             co_s3 = SimpleStorageServiceS3Bucket("S3")
 
-            co_cf >> [
-                co_s3,
-                co_functions
-            ]
+            co_cf >> co_functions,
+            co_cf << co_s3
 
         co >> co_cf
 
@@ -60,10 +58,8 @@ with Diagram("High Level Architecture - Level 0"):
             ats_functions = Lambda("Lambda@Edge")
             ats_s3 = SimpleStorageServiceS3Bucket("S3")
 
-            ats_cf >> [
-                ats_functions,
-                ats_s3
-            ]
+            ats_cf >> ats_functions,
+            ats_cf << ats_s3
 
         ats >> ats_cf
 
@@ -72,7 +68,7 @@ with Diagram("High Level Architecture - Level 0"):
 
     with Cluster("AWS Storage"):
         user_table = Dynamodb("User's Table")
-        relational = Dynamodb("DB (Maybe)")
+        relational = RDSPostgresqlInstance("DB (Maybe)")
     
     with Cluster("Avalanche Services"):
         avalanche = BlockchainResource("Blockchain")
