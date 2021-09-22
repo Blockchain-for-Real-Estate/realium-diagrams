@@ -15,65 +15,81 @@ from diagrams.onprem.database import Mysql
 from diagrams.aws.security import Cognito
 from diagrams.onprem.compute import Server
 from diagrams.aws.database import Dynamodb, RDSPostgresqlInstance
-
+from diagrams.aws.mobile import APIGateway
+from diagrams.aws.engagement import SimpleEmailServiceSes
+from diagrams.aws.integration import SimpleNotificationServiceSns
+from diagrams.gcp.analytics import Dataflow
+from diagrams.generic.storage import Storage
+from diagrams.aws.integration import SimpleNotificationServiceSns
 
 with Diagram("High Level Architecture - Level 0"):
     users = Users()
 
-    with Cluster("DNS"):
-        domain = DNS("Google Domains")
-        dns = Route53HostedZone("Route53 Hosted Zone")
+    with Cluster("Front End"):
+        with Cluster("DNS"):
+            domain = DNS("Google Domains")
+            dns = Route53HostedZone("Route53 Hosted Zone")
 
-        domain >> dns
+            domain >> dns
 
-    # CLUSTERS
-    with Cluster("realium.io"):
-        home = Server("Wordpress")
+        with Cluster("realium.io"):
+            realium = React("Next.js")
 
-        with Cluster("Wordpress by Bitnami"):
-            home_wp = Lightsail("Wordpress")
-            home_ssl = LetsEncrypt("Lets Encrypt SSL")
-            home_db = Mysql()
-        
-        home >> home_wp
-        home_wp << home_ssl
-        home_wp << home_db
+            with Cluster("AWS Amplify"):
+                realium_cf = CF("CloudFront")
+                realium_functions = Lambda("Lambda@Edge")
+                realium_s3 = SimpleStorageServiceS3Bucket("S3")
 
-    with Cluster("coownership.realium.io"):
-        co = React("Next.js")
-        with Cluster("AWS Amplify"):
-            co_cf = CF("CloudFront")
-            co_functions = Lambda("Lambda@Edge")
-            co_s3 = SimpleStorageServiceS3Bucket("S3")
+                realium_cf >> realium_functions,
+                realium_cf << realium_s3
+            
+            with Cluster("Google Analytics"):
+                gtm = Dataflow("Google Tag Manager")
+                gtm3 = Dataflow("Google My Business")
 
-            co_cf >> co_functions,
-            co_cf << co_s3
+                gtm >> gtm3
+            
+            with Cluster("Web3"):
+                metamask = Storage("Metamask")
 
-        co >> co_cf
+            realium >> metamask
+            realium >> realium_cf
+            realium >> gtm
 
-    with Cluster("ats.realium.io"):
-        ats = React("Next.js")
-        with Cluster("AWS Amplify"):
-            ats_cf = CF("CloudFront")
-            ats_functions = Lambda("Lambda@Edge")
-            ats_s3 = SimpleStorageServiceS3Bucket("S3")
 
-            ats_cf >> ats_functions,
-            ats_cf << ats_s3
+        with Cluster("NextAuth Providers"):
+            auth_services = Cognito("Cognito")
 
-        ats >> ats_cf
 
-    with Cluster("NextAuth Providers"):
-        auth_services = Cognito("Cognito")
+        with Cluster("AWS services"):
+            images = SimpleStorageServiceS3Bucket("Public Bucket")
+            cf_images = CF("Image Distribution")
 
-    with Cluster("AWS Storage"):
-        user_table = Dynamodb("User's Table")
-        relational = RDSPostgresqlInstance("DB (Maybe)")
+            user_table = Dynamodb("User's Table")
+            private_images = SimpleStorageServiceS3Bucket("Private Bucket")
+            
+            ses = SimpleEmailServiceSes("Emails")
+            sns = SimpleNotificationServiceSns("Text Notifications")
+
+            images >> cf_images
+
+
+
+        users >> domain
+        dns >> realium
+        realium_functions >> [ auth_services, images, private_images, ses, sns ]
+        realium_functions - [ user_table ]
+        cf_images >> realium
     
-    with Cluster("Avalanche Services"):
-        avalanche = BlockchainResource("Blockchain")
+    with Cluster("Backend"):
 
-    users >> domain
-    dns >> [ home, ats, co ]
-    co_functions >> [ auth_services, avalanche, user_table, relational ]
-    ats_functions >> [ auth_services, avalanche, user_table, relational ]
+        with Cluster("EVM"):
+            evm = EC2Instance("Smart Contracts")
+
+        with Cluster("Avalanche Services"):
+            avalanche = BlockchainResource("Blockchain")
+        
+        evm >> avalanche
+    
+
+    realium_functions >> evm
