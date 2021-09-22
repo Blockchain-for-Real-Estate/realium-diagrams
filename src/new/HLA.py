@@ -58,10 +58,13 @@ with Diagram("High Level Architecture - Level 0"):
 
 
         with Cluster("NextAuth Providers"):
-            auth_services = Cognito("Cognito")
+            facebook = Facebook()
+            facebook << Twitter()
 
 
         with Cluster("AWS services"):
+            auth_services = Cognito("Cognito")
+            
             images = SimpleStorageServiceS3Bucket("Public Bucket")
             cf_images = CF("Image Distribution")
 
@@ -77,8 +80,8 @@ with Diagram("High Level Architecture - Level 0"):
 
         users >> domain
         dns >> realium
-        realium_functions >> [ auth_services, images, private_images, ses, sns ]
-        realium_functions - [ user_table ]
+        realium_functions >> [ auth_services, images, ses, sns  ]
+        realium_functions - [ user_table, private_images, facebook ]
         cf_images >> realium
     
     with Cluster("Backend"):
