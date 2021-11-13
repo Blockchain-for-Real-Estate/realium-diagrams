@@ -13,7 +13,6 @@ from diagrams.aws.database import DB
 from diagrams.aws.engagement import SimpleEmailServiceSes
 from diagrams.aws.integration import SimpleNotificationServiceSns
 from diagrams.gcp.analytics import Dataflow
-from diagrams.generic.storage import Storage
 from diagrams.aws.integration import SimpleNotificationServiceSns
 
 with Diagram("High Level Architecture - Level 0"):
@@ -49,7 +48,6 @@ with Diagram("High Level Architecture - Level 0"):
             realium >> realium_cf
             realium >> gtm
 
-
         with Cluster("AWS services"):
             auth_services = Cognito("Cognito")
             
@@ -63,7 +61,6 @@ with Diagram("High Level Architecture - Level 0"):
             sns = SimpleNotificationServiceSns("Text Notifications")
 
             images >> cf_images
-
 
         users >> domain
         dns >> realium
@@ -81,6 +78,5 @@ with Diagram("High Level Architecture - Level 0"):
         
         wallets >> evm
         evm >> avalanche
-    
 
     realium_functions >> evm
